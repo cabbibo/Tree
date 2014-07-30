@@ -1,0 +1,229 @@
+<html>
+
+  <head>
+    <style>
+      
+    #container{ position:absolute; left:0px; top:0px; z-index:0; width:100%; height:100%; display:block; overflow:hidden}
+
+    #GUI{
+
+      position:fixed;
+      right:0px;
+      top:0px;
+      z-index:999;
+
+    }
+
+    #Info{
+      z-index: 999;
+      color: #fff;
+      background: #222;
+      border: 1px solid white;
+      position: fixed;
+      padding: 10px;
+    }
+
+     #stats{
+      z-index: 999;
+      bottom:0px;
+      left:0px;
+      border: 1px solid white;
+      position: fixed;
+      margin:10px;
+    }
+    </style>
+  </head>
+
+  <body>
+
+  <div id="Info">
+    <div id="totalVerts"></div>
+    <div id="totalFaces"></div>
+  </div>
+
+  <div id="GUI"></div>
+  <script src="three.js"></script>
+  <script src="jquery.min.js"></script>
+  <script src="stats.min.js"></script>
+  <script src="dat.gui.min.js"></script>
+  <script src="underscore.js"></script>
+  
+  <script src="ShaderLoader.js"></script>
+  <script src="TrackballControls.js"></script>
+
+  <script src="Tree.js"></script>
+
+  <script>
+
+    var camera, scene , renderer, controls , stats;
+
+    var tree;
+
+    var totalVerts = document.getElementById('totalVerts');
+    var totalFaces = document.getElementById('totalFaces');
+
+
+    var mat = new THREE.MeshNormalMaterial();
+    
+    var params = {
+      radius:                 100,
+      height:                1000,
+      sides:                    5,
+      numOf:                   10, 
+      randomness:             100,
+      slices:                 100,
+      startingChance:          1.,
+      chanceReducer:           .3,
+      randomnessReducer:       .3,
+      sliceReducer:            .5,
+      numOfReducer:            .5,
+      progressionPower:        .5,
+      lengthReduction:         .5,
+      maxIterations:            1,
+      material:               mat,
+      createTree: function(){
+        createTree();
+      }
+    }
+
+    
+    
+    
+    var gui = new dat.GUI({autoPlace:false});
+
+    var guiContainer = document.getElementById('GUI');
+    guiContainer.appendChild(gui.domElement);
+
+
+    gui.add( params , 'radius' , 0 , 400 );
+    gui.add( params , 'height' , 0 , 4000 );
+    gui.add( params , 'sides' , 0 , 20 ).step(1);
+    gui.add( params , 'numOf' , 4 , 40).step(1);
+    gui.add( params , 'randomness' , 0 , 500 );
+    gui.add( params , 'slices' , 10 , 500 ).step(1);
+    gui.add( params , 'startingChance' , 0 , 10 );
+    gui.add( params , 'chanceReducer' , 0 , .99);
+    gui.add( params , 'randomnessReducer' , 0 , .99 );
+    gui.add( params , 'sliceReducer' , 0 , .99 );
+    gui.add( params , 'numOfReducer' , 0 , .99);
+    gui.add( params , 'progressionPower' , 0 , 1 );
+    gui.add( params , 'lengthReduction' , 0 , 2 );
+    gui.add( params , 'maxIterations' , 0 , 5).step(1);
+    gui.add( params , 'createTree' ).name('Recreate Tree');
+
+
+    init();
+    animate();
+
+
+
+
+    function init(){
+
+      scene = new THREE.Scene();
+      
+      camera = new THREE.PerspectiveCamera( 
+        50 ,
+        window.innerWidth / window.innerHeight,
+        2000 / 100 ,
+        2000 * 100
+      );
+
+      // placing our camera position so it can see everything
+      camera.position.z = 2000 ;
+
+      camera.velocity = new THREE.Vector3();
+
+
+      // Getting the container in the right location
+      container     = document.createElement( 'div' );
+      container.id  = 'container';
+      
+      document.body.appendChild( container );
+
+      // Getting the stats in the right position
+      stats = new Stats();
+      stats.domElement.id = 'stats';
+      document.body.appendChild( stats.domElement );
+
+
+      // Setting up our Renderer
+      renderer = new THREE.WebGLRenderer();
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      container.appendChild( renderer.domElement );
+
+
+      // Making sure our renderer is always the right size
+      window.addEventListener( 'resize', onWindowResize , false );
+      
+      
+      controls = new THREE.TrackballControls( camera,renderer.domElement );
+
+      createTree();
+
+    }
+
+
+    function animate(){
+
+      //dT.value = clock.getDelta();
+      //timer.value += dT.value;
+
+      stats.update();
+      controls.update();
+
+      renderer.render( scene , camera );
+
+      requestAnimationFrame( animate );
+
+    }
+
+    function createTree( ){
+
+      if( tree ){
+        scene.remove( tree );
+      }
+
+      tree = new Tree( params );
+
+      tree.position.y = -500;
+
+      scene.add( tree );
+
+
+      console.log( 'new tree' );
+      totalVerts.innerHTML = "Total Verts: " + tree.geometry.totalVerts;
+      totalFaces.innerHTML = "Total Faces: " + tree.geometry.totalVerts / 3;
+
+    }
+
+    // Resets the renderer to be the proper size
+    function onWindowResize(){
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+
+    }
+
+     /* function onLoad(){
+
+
+    loaded ++;
+
+    if( loaded === neededToLoad ){
+
+      init();
+      animate();
+      stream.play();
+
+    }
+
+  }*/
+
+  </script>
+</body>
+</html>
+
