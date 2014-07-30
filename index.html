@@ -49,21 +49,30 @@
   <script src="underscore.js"></script>
   
   <script src="ShaderLoader.js"></script>
-  <script src="TrackballControls.js"></script>
+  <script src="OrbitControls.js"></script>
 
   <script src="Tree.js"></script>
 
   <script>
 
-    var camera, scene , renderer, controls , stats;
+    var camera, scene , renderer, controls , stats , clock;
 
-    var tree;
+    var tree , treeMat , floor , lights =[];
+
+    var timer = { type:"f" , value:0 };
+    var dT = { type:"f" , value: 0 };
+
+
+    var TEXTURES = {};
+
+    var normals = [];
+    var iris    = [];
+
 
     var totalVerts = document.getElementById('totalVerts');
     var totalFaces = document.getElementById('totalFaces');
 
 
-    var mat = new THREE.MeshNormalMaterial();
     
     var params = {
       radius:                 100,
@@ -79,14 +88,13 @@
       numOfReducer:            .5,
       progressionPower:        .5,
       lengthReduction:         .5,
-      maxIterations:            1,
-      material:               mat,
+      maxIterations:            2,
+      material:           treeMat,
       createTree: function(){
         createTree();
       }
     }
 
-    
     
     
     var gui = new dat.GUI({autoPlace:false});
@@ -95,31 +103,133 @@
     guiContainer.appendChild(gui.domElement);
 
 
-    gui.add( params , 'radius' , 0 , 400 );
-    gui.add( params , 'height' , 0 , 4000 );
-    gui.add( params , 'sides' , 0 , 20 ).step(1);
-    gui.add( params , 'numOf' , 4 , 40).step(1);
-    gui.add( params , 'randomness' , 0 , 500 );
-    gui.add( params , 'slices' , 10 , 500 ).step(1);
-    gui.add( params , 'startingChance' , 0 , 10 );
-    gui.add( params , 'chanceReducer' , 0 , .99);
-    gui.add( params , 'randomnessReducer' , 0 , .99 );
-    gui.add( params , 'sliceReducer' , 0 , .99 );
-    gui.add( params , 'numOfReducer' , 0 , .99);
-    gui.add( params , 'progressionPower' , 0 , 1 );
-    gui.add( params , 'lengthReduction' , 0 , 2 );
-    gui.add( params , 'maxIterations' , 0 , 5).step(1);
-    gui.add( params , 'createTree' ).name('Recreate Tree');
+    var treeGui = gui.addFolder( 'Tree Params' );
+
+    var g = treeGui.add( params , 'radius' , 0 , 400 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'height' , 0 , 4000 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'sides' , 0 , 20 ).step(1)
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'numOf' , 4 , 40).step(1)
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'randomness' , 0 , 500 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'slices' , 10 , 500 ).step(1)
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'startingChance' , 0 , 10 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'chanceReducer' , 0 , .99)
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'randomnessReducer' , 0 , .99 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'sliceReducer' , 0 , .99 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'numOfReducer' , 0 , .99)
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'progressionPower' , 0 , 1 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'lengthReduction' , 0 , 1 )
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'maxIterations' , 0 , 5).step(1)
+    g.onFinishChange(function(){createTree()});
+
+    var g = treeGui.add( params , 'createTree' ).name('Recreate Tree');
+    g.onFinishChange(function(){createTree()});
 
 
-    init();
-    animate();
+    var lightParams = {
+
+      cutoff: { type:"f" , value:1000 } ,
+      power: { type:"f" , value:1 } ,
+      positions: { type:"v3v" , value:[] },
+      textures:{   type:"tv" , value:iris }
+
+    }
+
+    var lightGui = gui.addFolder( 'Light Params' );
+
+    var g = lightGui.add( lightParams.cutoff , 'value' ).name( 'cutoff' );
+    var g = lightGui.add( lightParams.power  , 'value' ).name( 'power' );
+    
+    var floorParams = {
+
+      normalScale:{ type:"f" , value:.1 } ,
+      texScale: { type:"f" , value:2 } ,
+      bumpHeight: { type:"f" , value:200 } ,
+      bumpSize: { type:"f" , value:.001 } ,
+      bumpSpeed: { type:"f" , value:.1 } ,
+      bumpCutoff: { type:"f" , value:.5 } ,
+      normalMap : { type:"f" , value:0 },
+      iriMap    : { type:"f" , value:0 },
+
+    }
+
+    var fP = floorParams
+    var floorGui = gui.addFolder( 'Floor Params' );
+
+    var g = floorGui.add( fP.normalScale  , 'value' ).name( 'normalScale' );
+    var g = floorGui.add( fP.texScale     , 'value' ).name( 'texSize' );
+    var g = floorGui.add( fP.bumpHeight   , 'value' ).name( 'bumpHeight' );
+    var g = floorGui.add( fP.bumpSize     , 'value' ).name( 'bumpSize' );
+    var g = floorGui.add( fP.bumpSpeed    , 'value' ).name( 'bumpSpeed' );
+    var g = floorGui.add( fP.bumpCutoff    , 'value' ).name( 'bumpCutoff' );
+
+
+    var treeRenderParams = {
+
+      normalScale:{ type:"f" , value:.1 } ,
+      texScale: { type:"f" , value:2 } ,
+
+    }
+
+    var tP = treeRenderParams 
+    var treeRenderGui = gui.addFolder( 'Tree Render Params' );
+
+    var g = treeRenderGui.add( tP.normalScale  , 'value' ).name( 'normalScale' );
+    var g = treeRenderGui.add( tP.texScale     , 'value' ).name( 'texSize' );
+
+    var neededToLoad = 7;
+    var loaded = 0;
+
+    var shaders = new ShaderLoader( 'shaders' );
+
+
+    shaders.load( 'vs-floor' , 'floor' , 'vertex'    );
+    shaders.load( 'fs-floor' , 'floor' , 'fragment'    );
+    shaders.load( 'vs-tree' , 'tree' , 'vertex'    );
+    shaders.load( 'fs-tree' , 'tree' , 'fragment'    );
+
+    shaders.shaderSetLoaded = function(){ onLoad(); }
+
+
+
+    loadTexture( 'moss' , 'img/normals/carbonFiber.png' , normals );
+    loadTexture( 'iriGreen' , 'img/iri/green.png' , iris );
+    loadTexture( 'iriRed' , 'img/iri/red.png' , iris );
+    loadTexture( 'iriGold' , 'img/iri/gold.png' , iris );
+    loadTexture( 'iriBlue' , 'img/iri/blue.png' , iris );
+    loadTexture( 'iriPurp' , 'img/iri/greenBluePurp.png' , iris );
 
 
 
 
     function init(){
 
+      clock = new THREE.Clock();
       scene = new THREE.Scene();
       
       camera = new THREE.PerspectiveCamera( 
@@ -158,22 +268,141 @@
       window.addEventListener( 'resize', onWindowResize , false );
       
       
-      controls = new THREE.TrackballControls( camera,renderer.domElement );
+      //controls = new THREE.TrackballControls( camera,renderer.domElement );
+
+      controls = new THREE.OrbitControls( camera , renderer.domElement );
+	  controls.damping = 0.1;
+      //controls.addEventListener( 'change', render );
+
+      var lightGeo =  new THREE.IcosahedronGeometry( 30 , 2 );
+      var lightMat = new THREE.MeshNormalMaterial();
+      
+      for( var i = 0; i < 5; i++ ){
+
+        var height = (i+3 / 8 ) * 100.; 
+
+        var t = Math.random() * 2 * Math.PI;
+
+        var r = 1000;
+
+        var x = r * Math.cos( t );
+        var z = r * Math.cos( t );
+
+
+
+        light = new THREE.Mesh( lightGeo, lightMat );
+
+        light.position.x =  x;
+        light.position.z =  z;
+        light.position.y = height;
+
+        light.radius = r;
+        light.height = height;
+        light.theta  = t;
+
+        lightParams.positions.value.push( light.position );
+
+        scene.add( light );
+
+        lights.push( light );
+      }
+
+      var floorGeo =  new THREE.PlaneGeometry( 5000 , 5000 , 100 , 100 );
+
+      console.log( 'SHASDS' );
+      console.log( shaders.vs.floor );
+      console.log( shaders.vs.tree );
+      console.log( shaders.fs.floor );
+      console.log( shaders.fs.tree );
+      
+      var floorMat = new THREE.ShaderMaterial({
+
+
+        uniforms:{
+          timer:timer,
+          t_normal:{ type:"t" , value: TEXTURES.moss },
+          t_iri:{ type:"t" , value: TEXTURES.iriTurq },
+          normalScale:  floorParams.normalScale,
+          texScale:     floorParams.texScale,
+          bumpHeight:   floorParams.bumpHeight,
+          bumpSize:     floorParams.bumpSize,
+          bumpSpeed:    floorParams.bumpSpeed,
+          bumpCutoff:    floorParams.bumpCutoff,
+          lightCutoff:   lightParams.cutoff,
+          lightPower:    lightParams.power,
+          lightPositions: lightParams.positions, 
+          lightTextures: lightParams.textures,
+          cameraPos:{ type:"v3" , value: camera.position }
+        },
+        vertexShader: shaders.vs.floor,
+        fragmentShader: shaders.fs.floor,
+
+      });
+
+
+      floor = new THREE.Mesh( floorGeo , floorMat );
+
+      floor.rotation.x = -Math.PI / 2;
+
+      floor.position.y = -450
+      scene.add( floor );
+
+
+      
+      treeMat = new THREE.ShaderMaterial({
+
+
+        uniforms:{
+          timer:timer,
+          t_normal:{ type:"t" , value: TEXTURES.moss },
+          t_iri:{ type:"t" , value: TEXTURES.iriTurq },
+          normalScale:  treeRenderParams.normalScale,
+          texScale:     treeRenderParams.texScale,
+          lightCutoff:   lightParams.cutoff,
+          lightPower:    lightParams.power,
+          lightPositions: lightParams.positions,
+          lightTextures: lightParams.textures,
+          cameraPos:{ type:"v3" , value: camera.position }
+        },
+        vertexShader: shaders.vs.tree,
+        fragmentShader: shaders.fs.tree,
+
+      });
+
+
+      params.material = treeMat;
 
       createTree();
 
     }
 
+    function render(){
+
+      renderer.render( scene , camera );
+
+    }
 
     function animate(){
 
-      //dT.value = clock.getDelta();
-      //timer.value += dT.value;
+      dT.value = clock.getDelta();
+      timer.value += dT.value;
+
+
+      for( var i =0 ; i < lights.length; i++ ){
+
+        var l = lights[i];
+
+        l.theta += .001 + i * .001;
+        l.position.x = l.radius * Math.cos( l.theta );
+        l.position.z = l.radius * Math.sin( l.theta );
+        l.position.y = l.height + Math.cos( (l.theta  )) * 500; 
+
+      }
 
       stats.update();
       controls.update();
-
-      renderer.render( scene , camera );
+      render();
+      //renderer.render( scene , camera );
 
       requestAnimationFrame( animate );
 
@@ -181,6 +410,10 @@
 
     function createTree( ){
 
+      console.log( '---------------------------------------------' );
+      console.log( '            NEW TREE                         ' );
+      console.log( '---------------------------------------------' );
+     
       if( tree ){
         scene.remove( tree );
       }
@@ -191,8 +424,6 @@
 
       scene.add( tree );
 
-
-      console.log( 'new tree' );
       totalVerts.innerHTML = "Total Verts: " + tree.geometry.totalVerts;
       totalFaces.innerHTML = "Total Faces: " + tree.geometry.totalVerts / 3;
 
@@ -208,20 +439,43 @@
 
     }
 
-     /* function onLoad(){
+    function loadTexture( name , file , array ){
+
+      // callback
+      var cb = function(){
+        onLoad(); 
+      };
+
+      // mapping
+      var m = THREE.UVMapping;
+
+      // load call
+      var l = THREE.ImageUtils.loadTexture;
+
+      TEXTURES[ name ] = l( file , m , cb );
+      TEXTURES[ name ].wrapS = THREE.RepeatWrapping;
+      TEXTURES[ name ].wrapT = THREE.RepeatWrapping;
+
+      array.push( TEXTURES[name] );
+
+    }
 
 
-    loaded ++;
+   function onLoad(){
+
+
+     loaded ++;
+     console.log( loaded );
 
     if( loaded === neededToLoad ){
 
       init();
       animate();
-      stream.play();
+      //stream.play();
 
     }
 
-  }*/
+  }
 
   </script>
 </body>

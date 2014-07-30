@@ -313,6 +313,7 @@ Tree.prototype.createGeo = function( params ){
     lengthReduction:         .5,
     maxIterations:            1,
 
+    maxVerts:      10000000
   });
 
 
@@ -320,6 +321,9 @@ Tree.prototype.createGeo = function( params ){
   this.curves = curves;
 
   this.totalPoints = 0;
+
+  this.totalClean = 0;
+  this.totalVerts = 0;
 
   var start = new THREE.Vector3();
 
@@ -333,7 +337,7 @@ Tree.prototype.createGeo = function( params ){
 
   for( var i = 0; i < curves.length; i++){
  
-    if( curves[i][1].length < 3 ) continue;
+    if( curves[i][1].length < 3 ){ console.log('NOPE' ); continue ; }
 
     var pNum = Math.floor( p.slices * Math.pow( p.sliceReducer , curves[i][0] ));
     totalClean += (pNum-1);
@@ -348,6 +352,9 @@ Tree.prototype.createGeo = function( params ){
   var geometry = new THREE.BufferGeometry();
 
   geometry.totalVerts = totalVerts;
+  console.log('totalVErts');
+  console.log( this.totalVerts );
+  console.log( totalVerts );
 
   var posA = new THREE.BufferAttribute( new Float32Array( totalVerts * 3 ), 3 );
   var norA = new THREE.BufferAttribute( new Float32Array( totalVerts * 3 ), 3 ); 
@@ -384,6 +391,21 @@ Tree.prototype.createTreeCurve = function( iteration , radius , start, end , par
   var p = params;
   var i = iteration;
 
+ 
+  if( iteration == p.maxIterations ){
+    //console.log('NOPE Iteration');
+    return
+  };
+
+
+  var pNum = Math.floor( p.slices * Math.pow( p.sliceReducer , iteration ));
+  var totalClean = this.totalClean + (pNum-1);
+  var totalVerts = this.totalVerts + (pNum-1) * p.sides * 6;
+
+  if( totalVerts > p.maxVerts ){
+   // console.log('demasiado');
+    return; 
+  }
 
   var dif = end.clone().sub( start );
 
@@ -397,8 +419,29 @@ Tree.prototype.createTreeCurve = function( iteration , radius , start, end , par
   var randomness = fl( p.randomness * pow( p.randomnessReducer , i ) );
   var chance = fl( p.startingChance * pow( p.chanceReducer , i ) );
 
+
+  if( size < 3 ){
+
+   // console.log('numoftoosmall');
+    return;
+  }
+  
+  var pNum = Math.floor( p.slices * Math.pow( p.sliceReducer , iteration ));
+  this.totalClean += (pNum-1);
+  this.totalVerts += (pNum-1) * p.sides * 6;
+
+
+  var NO_MORE_FOR_THE_LOVE_OF_GOD = false;
+
+
+  if( this.totalVerts > p.maxVerts ){
+    //console.log( 'FOR THE LOVE OF GOD NO MORE' );
+    NO_MORE_FOR_THE_LOVE_OF_GOD = true;
+  }
+
+
+
  // console.log( chance );
-  if( iteration == p.maxIterations ){ return};
  
   for( var i = 0; i < size; i++ ){
 
@@ -407,7 +450,6 @@ Tree.prototype.createTreeCurve = function( iteration , radius , start, end , par
    // x *= x * x ;
     
     var point = start.clone().add( dif.clone().multiplyScalar( 1-x ) );
-
     if( i != 0 ){
 
       var random = new THREE.Vector3();
@@ -419,42 +461,7 @@ Tree.prototype.createTreeCurve = function( iteration , radius , start, end , par
 
     }
 
-    var rand = Math.random();
-   
-    var cMult =( i / size ) ;
-
-    var finalChance = chance * Math.pow( cMult , p.progressionPower );
-  
-    //console.log(chance);
-    if( rand <  finalChance ){//finalChance ){
-
-      var newStart = new THREE.Vector3();
-      newStart.copy( point );
-
-      var newDir = dif.clone();
-      newDir.normalize();
-
-      if( i !== 0 ){
-
-        newDir.copy( point );
-        newDir.sub( points[ i-1] );
-        newDir.normalize();
-
-      }
-
-
-      var newEnd = newStart.clone();
     
-      newDir.multiplyScalar( dif.length() * p.lengthReduction )
-      newEnd.add( newDir );
-
-      //var cMult = 1 - ( i / size ) ;
-      
-      this.createTreeCurve( iteration + 1 , radius * x , newStart , newEnd , params ); 
-
-
-    }
-
     point.radius = (x) * radius;
     points.push( point );
 
@@ -465,6 +472,60 @@ Tree.prototype.createTreeCurve = function( iteration , radius , start, end , par
 
   //console.log( totalPoints );
   this.totalPoints += points.length;
+
+
+  for( var i = size-1; i >= 0; i-- ){
+
+    if( NO_MORE_FOR_THE_LOVE_OF_GOD === false ){
+
+    
+      var rand = Math.random();
+     
+      var cMult =( i / size ) ;
+
+      var finalChance = chance * Math.pow( cMult , p.progressionPower );
+   
+      var point = points[ i ];
+      //console.log(chance);
+      if( rand <  finalChance ){//finalChance ){
+
+        var newStart = new THREE.Vector3();
+        newStart.copy( point );
+
+        var newDir = dif.clone();
+        newDir.normalize();
+
+        if( i !== 0 ){
+
+          newDir.copy( point );
+          newDir.sub( points[ i-1] );
+          newDir.normalize();
+
+        }
+
+
+        var newEnd = newStart.clone();
+
+        var m = size -1 ;
+        var x =( (m-i) / m );
+
+      
+        newDir.multiplyScalar( dif.length() * p.lengthReduction )
+        newEnd.add( newDir );
+
+        //var cMult = 1 - ( i / size ) ;
+        
+        this.createTreeCurve( iteration + 1 , radius * x , newStart , newEnd , params ); 
+
+
+      }
+
+    }
+
+
+
+  }
+
 
   //return points
 
