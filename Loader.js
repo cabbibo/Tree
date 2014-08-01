@@ -1,8 +1,5 @@
-  
-var failureTitleText = "Oh No!";
+var failureTitleText = "so here are some screen captures instead ";
 var failureDialog = "Your Browser is missing the following Technologies:";
-var failureLink = 'System_Preferences.zip';
-var failureImg = 'icons/albumCover.png';
 
 function Loader(  params ){
 
@@ -158,13 +155,13 @@ function Loader(  params ){
 
     addFailureDialog: function(){
 
-      console.log('NOSOSOS');
+    console.log( 'FAILS');
       this.failureDialog = document.createElement('div');
       this.failureDialog.id = "failureDialog";
 
       this.curtain.appendChild( this.failureDialog );
 
-      var failureTitle = document.createElement('h3');
+      var failureTitle = document.createElement('div');
       failureTitle.id = "failureTitle";
       failureTitle.innerHTML = failureTitleText;
 
@@ -175,38 +172,91 @@ function Loader(  params ){
       failureReasons.innerHTML = failureDialog;
       //'Best viewed on Chrome. This project requires:';
 
-      /**var failureReasons = document.createElement('p');
+      var failureReasons = document.createElement('p');
       failureReasons.id = "failureReasons";
-      failureReasons.innerHTML = "Wom.bs requires:";*/
+      failureReasons.innerHTML = "Tree by @Cabbibo requires:";
 
       this.failureList = document.createElement('p');
       this.failureList.id = "failureList";
 
       this.failureVideo = document.createElement('div');
 
-      /*var w = window.innerWidth / 1.618;
+      var w = window.innerWidth / 1.618;
       var string = '<iframe src="//player.vimeo.com/video/';
-      string += failureVideo;
+      string += 96964491;
       string += '" width="'
       string += w;
       string += '" height="'
       string += w * .618;
-      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>'*/
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
 
-      this.failureLink = document.createElement( 'a' );
-      this.failureLink.href = failureLink;
-      this.failureLink.id = 'failureLink';
-      this.failureImg = document.createElement( 'img' );
+      string += '<iframe src="//player.vimeo.com/video/';
+      string += 96993614;
+      string += '" width="'
+      string += w;
+      string += '" height="'
+      string += w * .618;
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
+
+
+      string += '<iframe src="//player.vimeo.com/video/';
+      string += 84019684;
+      string += '" width="'
+      string += w;
+      string += '" height="'
+      string += w * .618;
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
+
+      string += '<iframe src="//player.vimeo.com/video/';
+      string += 96993970;
+      string += '" width="'
+      string += w;
+      string += '" height="'
+      string += w * .618;
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
+
+        
+      string += '<iframe src="//player.vimeo.com/video/';
+      string += 96872530;
+      string += '" width="'
+      string += w;
+      string += '" height="'
+      string += w * .618;
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
+
+        
+      string += '<iframe src="//player.vimeo.com/video/';
+      string += 78139371;
+      string += '" width="'
+      string += w;
+      string += '" height="'
+      string += w * .618;
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
+
+        
+      string += '<iframe src="//player.vimeo.com/video/';
+      string += 86874956;
+      string += '" width="'
+      string += w;
+      string += '" height="'
+      string += w * .618;
+      string += '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><br/>'
+
+        96993970
+
+      
+      this.failureVideo.innerHTML = string;
+
+      /*this.failureImg = document.createElement( 'img' );
       this.failureImg.src = failureImg;
       this.failureImg.id = 'failureImg';
-      this.failureLink.appendChild( this.failureImg );
-      this.failureLink.style.background      
+      this.failureLink.appendChild( this.failureImg );*/
       this.failureDialog.appendChild( failureReasons );
       this.failureDialog.appendChild( this.failureList );
+      this.failureDialog.appendChild( failureTitle);
+      this.failureDialog.appendChild( this.failureVideo );
 
-     // this.failureDialog.appendChild( failureDialog );
-      this.failureDialog.appendChild( this.failureLink );
-  
+ 
 
     },
 
