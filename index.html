@@ -38,7 +38,11 @@
 
     }
     #Info{
-      display:none;
+
+      width: 100%;
+      font-size:40px;
+      text-align:center;
+    
     }
    /* #Info{
       z-index: 999;
@@ -63,7 +67,7 @@
   <body>
 
   <div id="Info">
-    Total Verts: <div id="totalVerts"></div>
+    <!-- Total Verts: <div id="totalVerts"></div>-->
   </div>
 
   <div id="GUI"></div>
@@ -225,6 +229,7 @@
 
     var totalVerts = document.getElementById('totalVerts');
     var totalFaces = document.getElementById('totalFaces');
+    var infoElement = document.getElementById('Info');
 
 
     
@@ -485,6 +490,7 @@
         light.height = height;
         light.theta  = t;
 
+        light.title =  lightArray[i].title;
         light.playing  = true;
 
         light.audio = AUDIO[ lightArray[i].audio ];
@@ -522,6 +528,7 @@
 
         light.hoverOver = function(){
 
+          infoElement.innerHTML = this.title;
           console.log('HELLO' );
           this.hovered = true;
           this.titleMesh.position.copy( this.position );
@@ -529,7 +536,7 @@
 
           this.titleMesh.lookAt( camera.position );
 
-          this.titleMesh.material.opacity = 1;
+          //this.titleMesh.material.opacity = 1;
           this.material.uniforms.hovered.value = 1;
           for( var i = 0; i < lights.length; i++ ){
 
@@ -549,6 +556,9 @@
 
           console.log('HELLO' );
           this.hovered = false;
+
+          infoElement.innerHTML = "";
+
         
           this.titleMesh.material.opacity = 0;
           this.material.uniforms.hovered.value = 0;
@@ -739,7 +749,7 @@
 
       tree.position.y = -500;
 
-
+/*
       if( tree.maxHit === true ){
 
         totalVerts.style.color = '#ff0000';
@@ -748,11 +758,11 @@
   
         totalVerts.style.color = '#ffffff';
 
-      }
+      }*/
 
       scene.add( tree );
 
-      totalVerts.innerHTML = tree.geometry.totalVerts;
+     // totalVerts.innerHTML = tree.geometry.totalVerts;
     }
 
     // Resets the renderer to be the proper size
