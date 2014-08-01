@@ -90,6 +90,7 @@
 
   <script src="ObjectControls.js"></script>
   <script src="Tree.js"></script>
+  <script src="TreeLight.js"></script>
 
   <script>
 
@@ -399,7 +400,6 @@
 
 
 
-
     loadTexture( 'moss' , 'img/normals/sand.png' , normals );
 
     
@@ -458,11 +458,8 @@
       window.addEventListener( 'resize', onWindowResize , false );
       
       
-      //controls = new THREE.TrackballControls( camera,renderer.domElement );
-
       controls = new THREE.OrbitControls( camera , renderer.domElement );
 	  controls.damping = 0.1;
-      //controls.addEventListener( 'change', render );
 
       var lightGeo =  new THREE.IcosahedronGeometry( 50 , 2 );
       var lightMat = new THREE.MeshNormalMaterial();
@@ -478,146 +475,19 @@
         var x = r * Math.cos( t );
         var z = r * Math.cos( t );
 
-        var mat = new THREE.ShaderMaterial({
+        // Params
+        var p= lightArray[i];
 
-          uniforms:{
-            
-            timer:timer,
-            t_normal:{ type:"t" , value: TEXTURES.moss },
-            normalScale:  lightParams.normalScale,
-            texScale:     lightParams.texScale,
-            cameraPos:{ type:"v3" , value: camera.position },
-            color:{ type:"v3" , value:lightArray[i].color},
-            t_audio:{ type:"t" , value: AUDIO[ lightArray[i].audio ].texture },
-            hovered:{ type:"f" , value: 0 }
-          },
+        p.geo = lightGeo;
+        p.position = new THREE.Vector3( x , height , z);
+        p.loadedAudio = AUDIO[ lightArray[i].audio ];
 
-          vertexShader:shaders.vs.treeLight,
-          fragmentShader:shaders.fs.treeLight
+        p.radius = r;
+        p.height = height;
+        p.theta  = t;
+        p.id     = i;
 
-        });
-        light = new THREE.Mesh( lightGeo, mat );
-
-        light.position.x =  x;
-        light.position.z =  z;
-        light.position.y = height;
-
-        light.radius = r;
-        light.height = height;
-        light.theta  = t;
-
-        light.title =  lightArray[i].title;
-        light.playing  = true;
-
-        light.audio = AUDIO[ lightArray[i].audio ];
-        light.texture = light.audio.texture;
-
-        light.titleMesh = textCreator.createMesh( lightArray[i].title ,{
-     
-          size: 20,
-          //margin: 20000,
-        });
-
-        light.titleMesh.material.transparent = true;
-        light.titleMesh.material.blending = THREE.AdditiveBlending;
-        light.titleMesh.material.depthWrite = false;
-        light.titleMesh.material.opacity = 0;
-
-        light.titleMesh.materialNeedsUpdate = true;
-        //light.titleMesh.position.y = 200;
-
-        scene.add( light.titleMesh );
-
-        console.log( 'LIGHT AUDIO' );
-        console.log( light.audio );
-        light.color = lightArray[i].color;
-
-
-        looper.everyLoop( function(){ this.audio.play() }.bind( light ) );
-
-        light.audio.updateAnalyser = true;
-        light.audio.updateTexture = true;
-
-        lightParams.textures.value.push( light.texture );
-        lightParams.positions.value.push( light.position );
-        lightParams.colors.value.push( light.color );
-
-        light.hoverOver = function(){
-
-          infoElement.innerHTML = this.title;
-          console.log('HELLO' );
-          this.hovered = true;
-          this.titleMesh.position.copy( this.position );
-          this.titleMesh.position.y += 100;
-
-          this.titleMesh.lookAt( camera.position );
-
-          //this.titleMesh.material.opacity = 1;
-          this.material.uniforms.hovered.value = 1;
-          for( var i = 0; i < lights.length; i++ ){
-
-            if( lights[i]  != this ){
-
-              lights[i].audio.filter.frequency.value = 300;
-
-            }
-
-          }
-
-
-        }.bind( light );
-
-       
-        light.hoverOut = function(){
-
-          console.log('HELLO' );
-          this.hovered = false;
-
-          infoElement.innerHTML = "";
-
-        
-          this.titleMesh.material.opacity = 0;
-          this.material.uniforms.hovered.value = 0;
-
-
-            for( var i = 0; i < lights.length; i++ ){
-
-            if( lights[i]  != this ){
-
-              var f =  lights[i].audio.filter;
-              f.frequency.value = f.frequency.maxValue;
-
-            }
-
-          }
-
-
-          console.log( this );
-          console.log( this.hovered );
-        }.bind( light );
-
-        light.select = function(){
-
-          this.playing = !this.playing;
-
-          if( this.playing === false ){
-
-            this.audio.gain.gain.value = 0;
-
-          }else{
-
-          this.audio.gain.gain.value = .8;
-
-
-          }
-
-        }.bind( light );
-
-
-        objectControls.add( light );
-        scene.add( light );
-
-        lights.push( light );
+        new TreeLight( window ,  p );
 
       }
 
@@ -658,7 +528,7 @@
 
 
       
-      treeMat = new THREE.ShaderMaterial({
+      var treeMat = new THREE.ShaderMaterial({
 
 
         uniforms:{
@@ -682,6 +552,10 @@
 
       params.material = treeMat;
 
+      console.log('PARAMS');
+
+      console.log( params.material );
+
 
       // to keep any 'roots' from showing
       var base = new THREE.Mesh(
@@ -692,6 +566,7 @@
       base.rotation.x = - Math.PI / 2;
       base.position.y = -453;
       scene.add( base );
+      
       createTree();
 
 
@@ -714,31 +589,8 @@
 
       for( var i =0 ; i < lights.length; i++ ){
 
-        var l = lights[i];
+        lights[i].update();
 
-        if( !l.hovered && l.playing ){
-          
-          l.theta += .001 + i * .001;
-          l.position.x = l.radius * Math.cos( l.theta );
-          l.position.z = l.radius * Math.sin( l.theta );
-          l.position.y = l.height + Math.cos( (l.theta*  (i+5)/3 )) * 100;
-
-          l.rotation.x += (i + 5) / 1000;
-          l.rotation.y -= ((i%1)*10 + 5) / 1000;
-          l.rotation.z -= (20 - i) / 2000;
-          G.tmpV3.copy( l.position );
-          G.tmpV3.sub( camera.position );
-
-          var length = G.tmpV3.length();
-
-          var a = Math.min( 1000. / length , 1. );
-
-          l.audio.gain.gain.value = a;
-
-        }
-
-
-        
 
       }
 
@@ -761,6 +613,7 @@
         scene.remove( tree );
       }
 
+      console.log( params.material );
       tree = new Tree( params );
 
       tree.position.y = -500;
