@@ -28,7 +28,7 @@
       new THREE.MeshBasicMaterial({ color:0x0000ff })
     );
 
-    this.domElement         = params.domElement         || document//////////////////.body;
+    this.domElement         = document; //////////////////.body;
     this.selectionStrength  = params.selectionStrength  || .5;
     this.indicator          = params.indicator          || indicator; 
 
@@ -68,9 +68,9 @@
 
     var addListener = this.domElement.addEventListener;
    
-    addListener( 'mousedown', this.mouseDown.bind( this )  , false );
-    addListener( 'mouseup'  , this.mouseUp.bind( this )    , false );
-    addListener( 'mousemove', this.mouseMove.bind( this )  , false );
+    this.domElement.addEventListener( 'mousedown', this.mouseDown.bind( this )  );
+    this.domElement.addEventListener( 'mouseup'  , this.mouseUp.bind( this )    );
+    this.domElement.addEventListener( 'mousemove', this.mouseMove.bind( this )  );
 
   }
 

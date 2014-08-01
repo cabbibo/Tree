@@ -199,6 +199,15 @@ function LoadedAudio( controller ,  file , params ){
 
     this.playing = false;
 
+    if( this.source.noteOff ){
+
+      this.source.noteOff(0);
+    }else{
+
+      this.source.stop();
+
+    }
+
     this.source.stop();
 
     this.createSource();
@@ -211,7 +220,14 @@ function LoadedAudio( controller ,  file , params ){
 
     this.playing = true;
 
-    this.source.start();
+    if( this.source.noteOn ){
+
+      this.source.noteOn(0);
+    }else{
+
+      this.source.play();
+
+    }
    
     // Creates a new source for the audio right away
     // so we can play the next one with no delay

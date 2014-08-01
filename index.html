@@ -1,6 +1,8 @@
 <html>
 
   <head>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    
     <style>
 
     html{
@@ -8,7 +10,7 @@
       background:#000;
 
     }
-    #container{ position:absolute; left:0px; top:0px; z-index:0; width:100%; height:100%; display:block; overflow:hidden}
+   // #container{ position:absolute; left:0px; top:0px; z-index:0; width:100%; height:100%; display:block; overflow:hidden}
 
     @font-face {
       font-family: "GeoSans";
@@ -24,7 +26,7 @@
 
     }
 
-    #Info{
+   /* #Info{
       z-index: 999;
       color: #fff;
       background: #222;
@@ -37,10 +39,10 @@
       z-index: 999;
       bottom:0px;
       left:0px;
-      border: 1px solid white;
+      //border: 1px solid white;
       position: fixed;
       margin:10px;
-    }
+    }*/
     </style>
   </head>
 
@@ -65,6 +67,7 @@
   <script src="ShaderLoader.js"></script>
   <script src="OrbitControls.js"></script>
   <script src="TextCreator.js"></script>
+  <script src="Loader.js"></script>
 
   <script src="ObjectControls.js"></script>
   <script src="Tree.js"></script>
@@ -82,6 +85,14 @@
 
     var timer = { type:"f" , value:0 };
     var dT = { type:"f" , value: 0 };
+    var loader = new Loader();
+
+    loader.onStart = function(){
+
+      init();
+      animate();
+
+    }
 
     var audioController = new AudioController();
     
@@ -159,7 +170,7 @@
 
     for( var i = 0; i < lightArray.length; i++ ){
 
-      neededToLoad ++;
+      loader.beginLoading();
       var name = lightArray[i].audio;
 
       file = 'audio/' + name + '.mp3';
@@ -167,9 +178,8 @@
 
       AUDIO[ name ].onLoad = function(){
 
-        onLoad();
+        loader.endLoading();
 
-        console.log( this );
       }.bind( AUDIO[ name ] );
 
     }
@@ -332,7 +342,7 @@
     var shaders = new ShaderLoader( 'shaders' );
 
 
-    neededToLoad ++;
+    loader.beginLoading();
 
     shaders.load( 'vs-floor' , 'floor' , 'vertex'    );
     shaders.load( 'fs-floor' , 'floor' , 'fragment'    );
@@ -341,7 +351,7 @@
     shaders.load( 'vs-treeLight' , 'treeLight' , 'vertex'    );
     shaders.load( 'fs-treeLight' , 'treeLight' , 'fragment'    );
 
-    shaders.shaderSetLoaded = function(){ onLoad(); }
+    shaders.shaderSetLoaded = function(){ loader.endLoading(); }
 
 
 
@@ -735,11 +745,11 @@
 
     function loadTexture( name , file , array ){
 
-      neededToLoad ++;
+      loader.beginLoading();
 
       // callback
       var cb = function(){
-        onLoad(); 
+        loader.endLoading(); 
       };
 
       // mapping
@@ -765,8 +775,8 @@
 
     if( loaded === neededToLoad ){
 
-      init();
-      animate();
+      //init();
+      //animate();
       //stream.play();
 
     }
