@@ -290,8 +290,8 @@ function Loader(  params ){
       var self = this;
      
       this._onStart();
-      $(this.curtain).fadeOut(300,function(){
-       // self._onStart();
+      $(this.curtain).fadeOut(800,function(){
+        self.onCurtainLifted();       //
       });
 
     },
@@ -312,6 +312,7 @@ function Loader(  params ){
     onStart:function(){},
 
 
+    onCurtainLifted:function(){},
 
     setNavigator: function(){
 

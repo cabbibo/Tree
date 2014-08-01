@@ -223,9 +223,10 @@ function LoadedAudio( controller ,  file , params ){
     if( this.source.noteOn ){
 
       this.source.noteOn(0);
+    
     }else{
 
-      this.source.play();
+      this.source.start();
 
     }
    

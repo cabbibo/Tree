@@ -26,6 +26,19 @@
 
     }
 
+    #stats{
+
+      position:absolute;
+      top:3px;
+      right:0px;
+      height:14px;
+      overflow:hidden;
+
+
+    }
+    #Info{
+      display:none;
+    }
    /* #Info{
       z-index: 999;
       color: #fff;
@@ -88,9 +101,13 @@
     var loader = new Loader();
 
     loader.onStart = function(){
-
       init();
       animate();
+    }
+
+    loader.onCurtainLifted = function(){
+
+      looper.start();
 
     }
 
@@ -231,6 +248,8 @@
     
     
     var gui = new dat.GUI({autoPlace:false});
+
+    gui.close();
 
     var guiContainer = document.getElementById('GUI');
     guiContainer.appendChild(gui.domElement);
@@ -400,7 +419,7 @@
       // Getting the stats in the right position
       stats = new Stats();
       stats.domElement.id = 'stats';
-      document.body.appendChild( stats.domElement );
+      guiContainer.appendChild( stats.domElement );
 
 
       // Setting up our Renderer
@@ -645,7 +664,6 @@
       scene.add( base );
       createTree();
 
-      looper.start();
 
     }
 
