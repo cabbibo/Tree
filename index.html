@@ -116,6 +116,22 @@
     loader.onCurtainLifted = function(){
 
       looper.start();
+      for( var i=0; i < lights.length; i++ ){
+
+        lights[i].select();
+
+        var t = lights[i].title;
+        if( 
+          t === 'Snaredrum Therapy - Cid Rim' || 
+          t === 'Hallelujah - Susanna and the Magical Orchestra' ||
+          t === 'All Alright - Sigur Ros'
+        ){
+
+          lights[i].select();
+
+        }
+
+      }
 
     }
 
