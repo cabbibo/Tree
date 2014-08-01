@@ -317,7 +317,7 @@ Tree.prototype.createGeo = function( params ){
     lengthReduction:         .5,
     maxIterations:            1,
 
-    maxVerts:      2000000
+    maxVerts:      1000000
   });
 
 

@@ -10,6 +10,11 @@
     }
     #container{ position:absolute; left:0px; top:0px; z-index:0; width:100%; height:100%; display:block; overflow:hidden}
 
+    @font-face {
+      font-family: "GeoSans";
+      src: url( "GeosansLight.ttf" );
+    }
+
     #GUI{
 
       position:fixed;
@@ -59,6 +64,7 @@
   
   <script src="ShaderLoader.js"></script>
   <script src="OrbitControls.js"></script>
+  <script src="TextCreator.js"></script>
 
   <script src="ObjectControls.js"></script>
   <script src="Tree.js"></script>
@@ -90,15 +96,16 @@
 
     {
 
-      title:
-      audio:"lup",
+      title:"Luppulagio - Sigur Ros",
+      audio:"lup", 
       color: new THREE.Vector3( 1.  , .5 , .3 ),
       position: new THREE.Vector3(),
       early: true
     },
 
     { 
-      audio:"snare",
+      title:"Snaredrum Therapy - Cid Rim",
+      audio:"snare",       
       color: new THREE.Vector3( 1.  , .2 , .3 ),
       position: new THREE.Vector3(),
       early: true
@@ -106,7 +113,8 @@
     },
 
     { 
-      audio:"glo",
+      title:"Glosoli - Sigur Ros",
+      audio:"glo", 
       color: new THREE.Vector3( .4 , .1 , 1. ),
       position: new THREE.Vector3(),
       early: true
@@ -115,7 +123,8 @@
 
 
     { 
-      audio:"game",
+      title:"Game - Susanna and the Magical Orchestra",
+      audio:"game", 
       color: new THREE.Vector3( .6 , .4 , 1. ),
       position: new THREE.Vector3(),
       early: true
@@ -123,21 +132,24 @@
     },
 
     { 
-      audio:"allRight",
+      title:"All Alright - Sigur Ros",
+      audio:"allRight",  
       color: new THREE.Vector3( .4 , .9 , .8),
       position: new THREE.Vector3(),
       early: false
     },
 
     { 
-      audio:"startingOver",
+      title:"Starting Over - Typhoon",
+      audio:"startingOver",       
       color: new THREE.Vector3( 1. , .7 , 0 ),
       position: new THREE.Vector3(),
       early: false
     },
 
     { 
-      audio:"tongue",
+      title:"Hallelujah - Susanna and the Magical Orchestra",
+      audio:"tongue",       
       color: new THREE.Vector3( .1 , .4 , 1 ),
       position: new THREE.Vector3(),
       early: false
@@ -157,6 +169,7 @@
 
         onLoad();
 
+        console.log( this );
       }.bind( AUDIO[ name ] );
 
     }
@@ -364,7 +377,9 @@
 
       objectControls = new ObjectControls( camera );
 
+            console.log('STARSd');
 
+      textCreator = new TextCreator( 300);
 
       // Getting the container in the right location
       container     = document.createElement( 'div' );
@@ -395,7 +410,7 @@
 	  controls.damping = 0.1;
       //controls.addEventListener( 'change', render );
 
-      var lightGeo =  new THREE.IcosahedronGeometry( 80 , 2 );
+      var lightGeo =  new THREE.IcosahedronGeometry( 50 , 2 );
       var lightMat = new THREE.MeshNormalMaterial();
       
       for( var i = 0; i < lightArray.length; i++ ){
@@ -442,6 +457,22 @@
         light.audio = AUDIO[ lightArray[i].audio ];
         light.texture = light.audio.texture;
 
+        light.titleMesh = textCreator.createMesh( lightArray[i].title ,{
+     
+          size: 20,
+          //margin: 20000,
+        });
+
+        light.titleMesh.material.transparent = true;
+        light.titleMesh.material.blending = THREE.AdditiveBlending;
+        light.titleMesh.material.depthWrite = false;
+        light.titleMesh.material.opacity = 0;
+
+        light.titleMesh.materialNeedsUpdate = true;
+        //light.titleMesh.position.y = 200;
+
+        scene.add( light.titleMesh );
+
         console.log( 'LIGHT AUDIO' );
         console.log( light.audio );
         light.color = lightArray[i].color;
@@ -460,7 +491,12 @@
 
           console.log('HELLO' );
           this.hovered = true;
+          this.titleMesh.position.copy( this.position );
+          this.titleMesh.position.y += 100;
 
+          this.titleMesh.lookAt( camera.position );
+
+          this.titleMesh.material.opacity = 1;
           this.material.uniforms.hovered.value = 1;
           for( var i = 0; i < lights.length; i++ ){
 
@@ -480,8 +516,8 @@
 
           console.log('HELLO' );
           this.hovered = false;
-          
-          this.material.uniforms.hovered.value = 0;
+        
+          this.titleMesh.material.opacity = 0;
 
 
             for( var i = 0; i < lights.length; i++ ){
@@ -507,6 +543,11 @@
           if( this.playing === false ){
 
             this.audio.gain.gain.value = 0;
+
+          }else{
+
+          this.audio.gain.gain.value = .8;
+
 
           }
 
