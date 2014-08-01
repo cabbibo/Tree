@@ -1,5 +1,5 @@
     var SOCIAL_MEDIA = [
-        ["TWITTER" ,"twitter_1.png" , "http://twitter.com/share?text=The%20Anatomy%20of%20a%20beat%20by%20@cabbibo&url=http://cabbi.bo/Tree"],
+        ["TWITTER" ,"twitter_1.png" , "http://twitter.com/share?text=%23threejs%20generative%20tree%20toy%20by%20@cabbibo&url=http://cabbi.bo/Tree"],
         ["FACEBOOK", "facebook_1.png" , 'http://www.facebook.com/sharer.php?u=http://cabbi.bo/Tree'],
         ["SOUNDCLOUD" ,"soundcloud_1.png" , "https://soundcloud.com/cabbibo/tongue-wrong-song"],
         ["CABBIBO" , "cabbibo_1.png" , "http://cabbi.bo"],
