@@ -1,5 +1,5 @@
     var SOCIAL_MEDIA = [
-        ["TWITTER" ,"twitter_1.png" , "http://twitter.com/share?text=%23threejs%20generative%20tree%20toy%20by%20@cabbibo&url=http://cabbi.bo/Tree"],
+        ["TWITTER" ,"twitter_1.png" , "http://twitter.com/share?text=%20Tree%20by%20@cabbibo%20(%20Made%20with%20%23threejs)%20:%20&url=http://cabbi.bo/Tree"],
         ["FACEBOOK", "facebook_1.png" , 'http://www.facebook.com/sharer.php?u=http://cabbi.bo/Tree'],
         ["SOUNDCLOUD" ,"soundcloud_1.png" , "https://soundcloud.com/cabbibo/tongue-wrong-song"],
         ["CABBIBO" , "cabbibo_1.png" , "http://cabbi.bo"],
@@ -27,8 +27,8 @@
 
         if( i != smArray.length -1 ){
           a.href = smArray[i][2];
-          if( i != 0 )
-            a.target = '_blank';
+          //if( i != 0 )
+          a.target = '_blank';
         }else{
           a.onClick = "function(){ console.log('hello')}";
           a.id = "information"
