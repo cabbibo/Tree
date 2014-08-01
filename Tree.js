@@ -1,10 +1,14 @@
 function Tree( params  ){
 
+  this.maxHit = false;
+
   var material = params.material
 
   var geo = this.createGeo( params );
 
   var mesh = new THREE.Mesh( geo , material );
+
+  mesh.maxHit = this.maxHit;
 
   return mesh;
 
@@ -313,7 +317,7 @@ Tree.prototype.createGeo = function( params ){
     lengthReduction:         .5,
     maxIterations:            1,
 
-    maxVerts:      10000000
+    maxVerts:      2000000
   });
 
 
@@ -404,6 +408,8 @@ Tree.prototype.createTreeCurve = function( iteration , radius , start, end , par
 
   if( totalVerts > p.maxVerts ){
    // console.log('demasiado');
+   
+    this.maxHit = true;
     return; 
   }
 

@@ -4,8 +4,9 @@ uniform float timer;
 uniform sampler2D t_normal;
 uniform sampler2D t_iri;
 
-uniform vec3 lightPositions[5];
-uniform sampler2D lightTextures[5];
+uniform vec3 lightPositions[7];
+uniform vec3 lightColors[7];
+uniform sampler2D lightTextures[7];
 uniform vec3 cameraPos;
 
 uniform float normalScale;
@@ -53,7 +54,7 @@ void main(){
 
 
   vec3 totalIri = vec3( 0.);
-  for( int i = 0; i < 5; i++ ){
+  for( int i = 0; i < 7; i++ ){
 
     vec3 lightPos = lightPositions[i];
 
@@ -72,7 +73,7 @@ void main(){
     float distMultiplier = clamp( lightCutoff / lightDist , 0. , 1. );
     distMultiplier = pow( distMultiplier , lightPower );
 
-    totalIri += iri * distMultiplier * facingRatio * facingRatio * facingRatio  * facingRatio;
+    totalIri += lightColors[i] * iri * distMultiplier * facingRatio * facingRatio * facingRatio  * facingRatio;
 
   }
 
