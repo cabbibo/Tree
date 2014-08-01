@@ -27,7 +27,7 @@ function TreeLight( page , params){
   
   light.page  = page;
 
-  light.playing = false;
+  light.playing = true;
   light.hovered = false;
 
    
@@ -37,6 +37,8 @@ function TreeLight( page , params){
   light.audio = params.loadedAudio;
   light.texture = params.loadedAudio.texture;
   light.color   = params.color;
+
+  light.name = params.audio;
 
   light.radius = params.radius;
   light.height = params.height;
